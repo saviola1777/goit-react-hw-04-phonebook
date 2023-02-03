@@ -11,7 +11,7 @@ class App extends React.Component{
     contacts: [],
     filter:'',
     }
-    componentDidMount(){                                                  //рендерить розмітку з початкового стану тільки один раз тобто при загрузці
+    componentDidMount(){                                                   //рендерить розмітку з початкового стану тільки один раз тобто при загрузці
       const contacts=  JSON.parse(localStorage.getItem('my-contacts')); //тут ми забрали наші номера шо ми добавляли раніше в localStorage 
       if(contacts){                  //ТУТПЕРЕВІРЯЄМО localStorage(якшо в localStorage ще нічого немає тому умова приводиться до false бо там буде 0 тому  нам нічого не треба рендерити)
         this.setState({contacts})           //ЯКШО УМОВА ПРИВОДИТЬСЯ ДО TRU ТОБТО В LOCALSTARAGE ЩОСЬ Є ТО МИ РЕНДЕРИМО 
