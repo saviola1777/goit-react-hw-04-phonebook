@@ -1,29 +1,26 @@
 import PropTypes from "prop-types";
 import css from "components/ContactForm/ContactForm.module.css"
-import React from 'react';
-// import inititalState from 'components/ContactForm/inititalState'   тут ми можемо зберігати наші обєкти такі як name , number
+ import inititalState from 'components/ContactForm/inititalState'  //зберігається обєкт з даними який ми будемо передавати в useState де є name:'' , number:'',
+import { useState } from "react"
 
-class ContactForm extends React.Component {
-  state = {
-    name: '',                            //могли б просто розпилити наш inititalState малоб бути  state={...inititalState} а далі коли міняється стейт міняються і дані в ньому
-    number: '',
-  } 
-  onHendleSubmit = (e) => {             
-    e.preventDefault();                           //при сабміті не перезагружає
-    const { addContact } = this.props;            //передаємо мій  пропс
-    addContact({ ...this.state })                //в мій проп ми розпилюємо тещо знаходиться в цьому стейті name , number 
-    this.setState({ name: '', number: '', })     //this.setState({ ...inititalState } можна було б так тому що він бере копію.inititalState в в ньому name: '', number: '',
+const ContactForm =({addContact})=>{                             //створюємо компонент у вигляді колбек функції куди передаємо проп ({addContact})
+const [state , setState] = useState({...inititalState})          //створюємо Хук useState де state це наш стейт setState метод для зміни стейту useState({...inititalState}) там дані
 
-  }
-  onHendleChange = ({ target }) => {
-    const { name, value } = target
-    this.setState({ [name]: value });
+ const onHendleChange = ({target})=>{                          //функція при зміні нашого інпуті тобто  те що ми записуємо ({target}) це те саме що e.target обєкт на якому від подія
+  const{name ,value}=target ;                                  //деструктуризація 
+  setState(prevState=>{                                        //зміна нашого стейту де [name] - це назва нашого name в інпуті два інпута з назвою name і number 
+    return {...prevState ,[name]:value}                        //name: значення що ми впишемо в інпут з назвою нейм number:все що впишемо в інпут з назвою намбер
+  })
+ }
 
-  };
-  render() {
-    const { name, number } = this.state;
-    const { onHendleSubmit, onHendleChange } = this
-    console.log(this.state)
+ const onHendleSubmit = (e) => {                 
+    e.preventDefault();                          
+    addContact({name ,number})                               //в наш проп передали дані зі стейту тут можна було писати state.name но  нижче провів деструктуризацію
+    setState({...inititalState})
+   }
+
+   const{name ,number}=state                                     //деструктуризуємл щоб в value не писати state.name state.number а просто value={name} value={namber}
+   
     return (
 
       <div className={css.wrapper}>
@@ -57,12 +54,13 @@ class ContactForm extends React.Component {
         </form>
       </div>
     )
-  }
+
 }
 ContactForm.Prototype = {
-  onSubmit: PropTypes.func.isRequired,
+  addContact: PropTypes.func.isRequired,
 }
 
 export default ContactForm;
+
 
 

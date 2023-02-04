@@ -1,87 +1,78 @@
 import { nanoid } from "nanoid";
-import React from 'react';
+import { useState, useEffect } from "react";
 
 import Cointeiner from 'components/Cointeiner/Cointeiner';
 import ContactForm from 'components/ContactForm/ContactForm';
 import ContactList from 'components/ContactList/ContactList';
 import Filter from 'components/Filter/Filter';
 
-class App extends React.Component{
-  state = {
-    contacts: [],
-    filter:'',
-    }
-    componentDidMount(){                                                  
-      const contacts=  JSON.parse(localStorage.getItem('my-contacts')); 
-      if(contacts){                 
-        this.setState({contacts})
-      } } 
+const App = () => {
+  const [contacts, setContacts] = useState(() => {
+    const contact = JSON.parse(localStorage.getItem("my-contacts"))
+    return contact ? contact : [];
+  })
+  const [filter, setFilter] = useState('')
 
-    componentDidUpdate(prevProps , prevState ){    
-      const{contacts}=this.state ;
-    if(prevState.contacts!==contacts){
-      localStorage.setItem('my-contacts' , JSON.stringify(contacts))
-    }}
-        
-    deleteContact = id => {
-      this.setState(prevState => {                                             
-     const removeContact=prevState.contacts.filter(contact=>contact.id!==id);  
-        return {contacts:removeContact};                    
-      });
-    };
+  useEffect(() => {                                               // першим аргументом ми передаємо колбек функцію в середині якої є логіка
+    localStorage.setItem("my-contacts", JSON.stringify(contacts)) // всередині неї ми робимо логіку ми сохраняємо наші контакти (localStorage.setItem ) , "my-contacts" це назва хриниліща
+  }, [contacts])     // другий аргумент масив змінних, при зміні будь-якого  буде запускатися ефект і виконуватися callback ,тобто щось змінилося в [contacts] запуститьяс 1 функція де запише зміни які відбулися в contactsю
 
-addContact = ({name , number})=>{
-this.setState(prevState => {
-  const{contacts}=prevState ;
-  if(this.isDublication(name)){
-    return alert(`${name} is already in contacts!`)
+  const isDublication = (name) => {
+    const normalizeName = name.toLowerCase()
+    const nameContact = contacts.find(({ name }) => {
+      return (normalizeName === name.toLowerCase())
+    })
+    return Boolean(nameContact)
   }
- const newContact={
-  id:nanoid(3),
-  name, 
-  number,
- }
-return{contacts:[newContact , ...contacts]}
-})}
 
-isDublication(name){
-const normalizeName= name.toLowerCase()
-const{contacts}=this.state
-const nameContact=contacts.find(({name})=>{
-  return(normalizeName===name.toLowerCase())
-})
-return Boolean(nameContact)
-}
+  const addContact = ({ name, number }) => {
+    if (isDublication(name)) {
+      return alert(`${name} is already in contacts!`)
+    }
+    setContacts(prevContacts => {
+      const newContact = {
+        id: nanoid(3),
+        name,
+        number,
+      }
+      return [...prevContacts, newContact]
+    })
+  }
 
-   onHendleChange = e => {          
-    this.setState({ [e.target.name]: e.target.value });         
-  };                                
- 
+  const deleteContact = id => {
+    setContacts(prevContacts => prevContacts.filter(contact => contact.id !== id))    //повертаються всі книги крім теї на якому висить id на яку ми нажали 
+  }
 
-  getFilteredContact(){                                    
-    const{filter,contacts}=this.state;                     
-    const normalizedFilter=filter.toLocaleLowerCase();     
-    const result=contacts.filter(({name})=>{           
-      return (name.toLocaleLowerCase().includes(normalizedFilter)) 
+  const onHendleFilter = ({ target }) => setFilter(target.value)
+
+  const getFilteredContact = () => {
+    if (!filter) return contacts;
+    const normalizedFilter = filter.toLocaleLowerCase();
+    const result = contacts.filter(({ name }) => {
+      return (name.toLocaleLowerCase().includes(normalizedFilter))
     })
     return result
-}
+  }
 
-render(){
- const {deleteContact, onHendleChange, addContact} = this ;
-  const contacts=this.getFilteredContact();
-  console.log(this.state.contacts)
+  const filterContacts = getFilteredContact();
+
   return (
-    
+
     <Cointeiner>
       <h2>Phonebook</h2>
-    <ContactForm  addContact={addContact} />
-    <h2>Contacts</h2> 
-    <Filter  onHendleChange={onHendleChange} />
-    <ContactList contacts={contacts} deleteContact={deleteContact}/>
+      <ContactForm addContact={addContact} />
+      <h2>Contacts</h2>
+      <Filter onHendleFilter={onHendleFilter} />
+      <ContactList contacts={filterContacts} deleteContact={deleteContact} />
     </Cointeiner>
-   
-    )}
-  }
-  export default App
-  
+
+  )
+
+}
+export default App
+
+// useEffect(callback, deps) приймає два аргументи:
+// callback - функція, усередині якої виконується вся логіка ефекту. Наприклад, запити на сервер, завдання обробників подій на документ і т.п.
+// залежності - масив змінних, при зміні будь-якого з яких, буде запускатися ефект і виконуватися callback. Це може бути стан, пропси або будь-яке локальне значення всередині компонента.
+// setItem(key, value) – сохранить пару ключ/значение.
+// getItem(key) – получить данные по ключу key.
